@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/onboarding_screen.dart';
+//import 'screens/onboarding_screen.dart';
+import 'screens/dashboard_screen.dart'; 
 void main()  {
  // The absolute starting point of your application execution thread on the phone
   runApp(const SafeMomsApp());
@@ -18,7 +19,8 @@ class SafeMomsApp extends StatelessWidget {
         useMaterial3: true, // Uses modern Android UI material styles
       ),
       // Tells Flutter to open up your onboarding setup form immediately on boot
-      home: const OnboardingScreen(), 
+      //home: const OnboardingScreen(),
+      home: const DashboardScreen(), 
     );
   }
 }
