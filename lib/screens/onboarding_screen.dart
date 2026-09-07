@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dashboard_screen.dart';
 
 
 class OnboardingScreen extends StatefulWidget {
@@ -162,11 +163,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Profile created! Setting up offline database...'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                     }
-                   },
+                          backgroundColor: Colors.green),
+                        );
+
+                        if (!mounted) return;
+                        // Navigate to the DashboardScreen after successful form submission
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                        );
+                      }
+                    },
                     child: const Text(
                       'Generate My Calendar',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
