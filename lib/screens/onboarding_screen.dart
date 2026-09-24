@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dashboard_screen.dart';
+import '../database_helper.dart';          //EDIT 
+import '../gestational_calculator.dart';   //EDIT
 
 
 class OnboardingScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   DateTime? _selectedDate;
+  bool isProcessing=false;                  //EDIT
 
   //trigger the native andriod/ios calender overlay dialog
   Future<void> _selectDate(BuildContext context) async {
@@ -80,6 +83,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _nameController,
+                  enabled:! isProcessing,          //EDIT
                   decoration: InputDecoration(
                     hintText: 'Enter your name',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -97,15 +101,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _phoneController,
+                  enabled: !isProcessing,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\+?[0-9]*')),
+                  ],
                   decoration: InputDecoration(
-                    hintText: 'e.g., 677XXXXXX',
+                    hintText: 'e.g., +237677XXXXXX or 677XXXXXX',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Icons.phone, color: Colors.pinkAccent),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return 'Please enter a rescue number';
+                    final cleanValue = value.trim();
+                    if (!RegExp(r'^\+?[0-9]{6,15}$').hasMatch(cleanValue)) {
+                      return 'Please enter a valid phone number';
+                    }
                     return null;
                   },
                 ),
@@ -115,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const Text('First Day of Your Last Period (LMP)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: () => _selectDate(context),
+                  onTap: isProcessing? null: () => _selectDate(context),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
@@ -147,7 +158,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       backgroundColor: Colors.pinkAccent,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
+                    onPressed: isProcessing?null: ()async {          //EDIT added _isPrecessing?null     and async
                       if (_formKey.currentState!.validate()) {
                         if (_selectedDate == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -155,26 +166,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           );
                           return;
                         }
+                        setState(() {  isProcessing = true; });
+                        try {
+                          DateTime edd = GestationalCalculator.calculateEDD(_selectedDate!);
+                          List<Map<String, dynamic>> checkupSchedule = GestationalCalculator.generateWHOSchedule(_selectedDate!);
+                          
+                          String formattedLmp = "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}";
+                          String formattedEdd = "${edd.year}-${edd.month.toString().padLeft(2, '0')}-${edd.day.toString().padLeft(2, '0')}";
+
+                          await DatabaseHelper.instance.saveUserProfile(_nameController.text, _phoneController.text, formattedLmp, formattedEdd);
+                          await DatabaseHelper.instance.saveClinicSchedule(checkupSchedule);
                         
                         // FIX: Kept logs and feedback cleanly bundled inside the execution workflow
-                        print('Name: ${_nameController.text}');
-                        print('Emergency Phone: ${_phoneController.text}');
-                        print('LMP Selected: $_selectedDate');
+                       // print('Name: ${_nameController.text}');
+                       // print('Emergency Phone: ${_phoneController.text}');
+                      //  print('LMP Selected: $_selectedDate');
                         
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Profile created! Setting up offline database...'),
-                          backgroundColor: Colors.green),
-                        );
+                       // ScaffoldMessenger.of(context).showSnackBar(
+                         // const SnackBar(content: Text('Profile created! Setting up offline database...'),
+                         // backgroundColor: Colors.green),
+                        //);
 
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         // Navigate to the DashboardScreen after successful form submission
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => const DashboardScreen()),
                         );
+                        } catch(error){
+                          // If the user backed out of the screen while processing, stop executing
+                          if (!context.mounted) return;
+                          
+                          setState(() { isProcessing = false; });
+                        
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Storage error: $error'), backgroundColor: Colors.red),
+                          );
+                        }
                       }
                     },
-                    child: const Text(
+                    child: isProcessing ? const CircularProgressIndicator(color:Colors.white):const Text(          //EDIT _isProcessing? constCircularProgressIndicator(color:white):
                       'Generate My Calendar',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                     ),

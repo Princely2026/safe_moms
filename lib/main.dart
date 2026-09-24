@@ -1,13 +1,36 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'database_helper.dart';
 
-void main()  {
- // The absolute starting point of your application execution thread on the phone
-  runApp(const SafeMomsApp());
+void main() async {
+  // Critical step ensures Flutter bindings are ready before loading the app
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SQLite FFI on desktop platforms (Windows, Linux)
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
+  // Pre-boot the SQLite engine and seed tables
+  await DatabaseHelper.instance.database;
+
+  // Check if maternal profile has already been created
+  final userProfile = await DatabaseHelper.instance.getUserProfile();
+  final bool hasProfile = userProfile != null;
+
+  // Starting point of the application execution
+  runApp(SafeMomsApp(hasProfile: hasProfile));
 }
 
 class SafeMomsApp extends StatelessWidget {
-  const SafeMomsApp({super.key});
+  final bool hasProfile;
+
+  const SafeMomsApp({super.key, this.hasProfile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +41,7 @@ class SafeMomsApp extends StatelessWidget {
         primarySwatch: Colors.pink,
         useMaterial3: true, // Uses modern Android UI material styles
       ),
-      // Tells Flutter to open up your onboarding setup form immediately on boot
-      home: const OnboardingScreen(),
-      
+      home: hasProfile ? const DashboardScreen() : const OnboardingScreen(),
     );
   }
 }
