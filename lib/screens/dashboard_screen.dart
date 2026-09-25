@@ -45,10 +45,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
            trimester = "Third Trimester";
         }
 
+        int lookupWeek = computedWeek;
+        if (computedWeek >= 1 && computedWeek <= 4) {
+          lookupWeek = 4; 
+        } 
+
         List<Map<String, dynamic>> articleRows = await db.query(
           'educational_content',
           where: 'target_week = ?',
-          whereArgs: [computedWeek],
+          whereArgs: [lookupWeek],
         );
 
         // If no article matches the exact week, show articles relevant to her current pregnancy stage
@@ -95,22 +100,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       setState(() { _isLoading = false; });
     }
-  }                                                        //EDIT  end here
-  // Hardcoded profile data (We will connect this to your SQLite tables in Phase 2)
-  //final String userName = "Mama Marie";
-  //final int currentWeek = 14; 
-
-  // Local archive of educational content matching Gestational Week 14
-  //final List<Map<String, String>> weeklyInsights = [
-  //  {
-  //    "title": "Baby's Development",
-  //    "body": "Your baby is now the size of a lemon! Facial muscles are starting to form, allowing them to squint and grimace inside the womb."
-  //  },
-  //  {
-  //    "title": "Nutrition Tips",
-  //    "body": "Your blood volume is expanding rapidly during this second trimester. Focus heavily on iron-rich local foods like spinach and beans to prevent anemia."
-  //  }
-  //];
+  }                                                        
+ 
 
   @override
   Widget build(BuildContext context) {
