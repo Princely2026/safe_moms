@@ -9,7 +9,7 @@
 *   **Relational Database Content Filtering:** Employs an embedded client-side database engine to run zero-data, locally filtered queries that display tailored health and nutritional text cards matching the user's precise week.
 *   **Hardware Integrated Emergency SOS Triage:** A high-contrast, persistent floating interface shortcut that captures raw device GPS coordinates and dispatches localized SMS distress alerts to a rescue contact using direct telephony carrier waves.
 *   **Clinical Report Exporter Engine:** Aggregates daily symptom logs, weight, and blood pressure telemetry matrices into a clean, structured, doctor-ready PDF clinical document completely offline.
-*   **Asymmetric Token Paywall Barrier:** Employs a local billing validation framework that locks premium content tracks using unique 6-digit transaction reference token validations to simulate offline 500 FCFA Mobile Money payment tracking.
+
 
 ## Technical Implementation Stack
 
