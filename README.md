@@ -29,7 +29,7 @@
 ### 🔗 Project Links & Resources
 
 * **GitHub Repository:** [https://github.com/Princely2026/safe_moms](https://github.com/Princely2026/safe_moms)
-* **Live Deployed App / Demo:** `[Live App Link: Paste Deployed URL Here]`
+* **Live Deployed App / Demo:** [https://github.com/Princely2026/safe_moms/releases/download/v1.0.0/SafeMoms-v1.0.0.apk]
 * **Software Requirements Specification (SRS):** [`SRS.md`](SRS.md)
 * **Software Design Document (SDD):** [`SDD.md`](SDD.md)
 
