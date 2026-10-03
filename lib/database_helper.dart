@@ -268,12 +268,16 @@ class DatabaseHelper {
       {'target_week': 40,
       'title': 'Trimester 3: Estimated Due Date','body_text': 'Baby: Ready for birth. Normal delivery timing varies across mothers.\nNutrition: Regular fluids and easily digestible meals as tolerated.\nSymptoms: Labor may begin; regular, intense, structured contractions.\nAdvice: Seek IMMEDIATE care for heavy bleeding, severe headache/vision shifts, abdominal pain, convulsions, or reduced fetal movement.'
       }
-      ];// Clear old placeholder entries to prevent indexing collisionsawait db.delete('educational_content');// Injects all 40 weeks of structured data rows into your internal schema
+      ];
+      // Clear old placeholder entries to prevent duplicate indexing collisions
+      await db.delete('educational_content'); // ✅ FIX: This was accidentally merged into a comment
+      // Injects all 40 weeks of structured data rows into your internal schema
       for (var article in localizedGuide) {
         await db.insert('educational_content', article);
         }
         debugPrint("SUCCESS: 40-Week  Clinical Education matrix seeded completely offline!");
         }
+
 
   // ==========================================
   // DATA ACCESS METHODS (DAO ENGINE CORES)
